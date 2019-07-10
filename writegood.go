@@ -5,21 +5,41 @@ import (
 	"fmt"
 )
 
-type Document struct {
-	// Content loaded from disk
+// PieceTable is a data structure to represent a series of edits of a text document.
+type PieceTable struct {
+	// Buffer for original text. This buffer is read-only.
 	Original []byte
-	// Content for user edits
-	Added  []byte
+	// Buffer for edits. This buffer is append-only.
+	Add    []byte
 	Pieces []*Piece
 }
 
-func (d *Document) Insert(offset int, b []byte) {
+// Piece represents a block of text either from the original buffer or an edit.
+type Piece struct {
+	// Start index of this piece in its respective buffer.
+	Start int
+	// Length of this piece in its respective buffer.
+	Length int
+	// Type of the piece, tells you which buffer to read from.
+	Type PieceType
+}
+
+// PieceType tells you what buffer this piece is associated with.
+type PieceType int
+
+const (
+	Original PieceType = iota
+	Added
+)
+
+// Insert writes the given bytes at the given offset.
+func (d *PieceTable) Insert(offset int, b []byte) {
 	added := &Piece{
-		Start:  len(d.Added),
+		Start:  len(d.Add),
 		Length: len(b),
 		Type:   Added,
 	}
-	d.Added = append(d.Added, b...)
+	d.Add = append(d.Add, b...)
 
 	if d.Pieces == nil {
 		d.insert(0, added)
@@ -55,13 +75,15 @@ func (d *Document) Insert(offset int, b []byte) {
 	d.insert(len(d.Pieces), added)
 }
 
-func (d *Document) insert(i int, p *Piece) {
+func (d *PieceTable) insert(i int, p *Piece) {
 	d.Pieces = append(d.Pieces, &Piece{})
 	copy(d.Pieces[i+1:], d.Pieces[i:])
 	d.Pieces[i] = p
 }
 
-func (d *Document) Delete(beg, end int) {
+// Delete removes the text between beg and end. Note that this doesn't actually delete anything from
+// the buffers, just manipulates the pieces.
+func (d *PieceTable) Delete(beg, end int) {
 	curr := 0
 	for i := 0; i < len(d.Pieces); i++ {
 		p := d.Pieces[i]
@@ -105,32 +127,17 @@ func (d *Document) Delete(beg, end int) {
 	}
 }
 
-func (d *Document) Bytes() ([]byte, error) {
+// Bytes returns the current text representation built up from the pieces.
+func (d *PieceTable) Bytes() ([]byte, error) {
 	var buf bytes.Buffer
 	for _, p := range d.Pieces {
 		if p.Type == Original {
 			buf.Write(d.Original[p.Start : p.Start+p.Length])
 		} else if p.Type == Added {
-			buf.Write(d.Added[p.Start : p.Start+p.Length])
+			buf.Write(d.Add[p.Start : p.Start+p.Length])
 		} else {
 			return nil, fmt.Errorf("unknown piece type: %d", p.Type)
 		}
 	}
 	return buf.Bytes(), nil
 }
-
-type Piece struct {
-	// Which index to start reading from
-	Start int
-	// How many characters to read from that buffer
-	Length int
-	// Type of the piece
-	Type PieceType
-}
-
-type PieceType int
-
-const (
-	Original PieceType = iota
-	Added
-)
