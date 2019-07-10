@@ -7,7 +7,7 @@ import (
 	writegood "github.com/travisjeffery/writegood"
 )
 
-func TestInsert(t *testing.T) {
+func TestInsert_Empty(t *testing.T) {
 	d := &writegood.Document{}
 	req := require.New(t)
 
@@ -113,4 +113,33 @@ func TestInsert(t *testing.T) {
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("woryesldbyehellogrief"), b)
+}
+
+func TestInsert_Existing(t *testing.T) {
+	req := require.New(t)
+	d := &writegood.Document{
+		Original: []byte("helloworld"),
+		Pieces: []*writegood.Piece{{
+			Start:  0,
+			Length: len("helloworld"),
+			Type:   writegood.Original,
+		}},
+	}
+	d.Insert(len("hello"), []byte("earth"))
+	t.Logf("original: %s, added: %s\n", d.Original, d.Added)
+	req.Equal([]*writegood.Piece{{
+		Start:  0,
+		Length: len("hello"),
+		Type:   writegood.Original,
+	}, {
+		Start:  0,
+		Length: len("earth"),
+		Type:   writegood.Added,
+	}, {
+		Start:  len("hello"),
+		Length: len("world"),
+		Type:   writegood.Original,
+	}}, d.Pieces)
+	b, _ := d.Bytes()
+	req.Equal([]byte("helloearthworld"), b)
 }

@@ -29,25 +29,29 @@ func (d *Document) Insert(offset int, b []byte) {
 	curr := 0
 	for i, p := range d.Pieces {
 		if offset == curr {
-			// Handle when change is made at start of piece
+			// Handle when change is made at start of piece. We need to add a new
+			// piece at the front of the pieces.
 			d.insert(i, added)
 			return
 		} else if curr+p.Length > offset {
-			// Handle when change is made in middle of piece
+			// Handle when change is made in middle of piece. We split the existing
+			// piece to two pieces, so we update the existing piece to have a shorter
+			// length, add a new piece for the added buffer in the middle, and add the
+			// second piece for the splitted original piece.
 			length := p.Length
-			p.Length = p.Length - (offset - curr - 1)
+			p.Length -= (p.Length + curr) - offset
 			d.insert(i+1, added)
 			d.insert(i+2, &Piece{
 				Start:  p.Start + p.Length,
 				Length: length - p.Length,
-				Type:   Added,
+				Type:   p.Type,
 			})
 			return
 		}
 		curr += p.Length
 	}
 
-	// Handle when change is made at end
+	// Handle when change is made at end. We need to add a piece at the end of the pieces.
 	d.insert(len(d.Pieces), added)
 }
 
