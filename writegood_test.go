@@ -10,108 +10,108 @@ import (
 func TestInsert_Empty(t *testing.T) {
 	t.Skip()
 
-	d := &writegood.Document{}
+	d := &writegood.PieceTable{}
 	req := require.New(t)
 
 	// initial case, empty doc
 	d.Insert(0, []byte("hello"))
-	t.Logf("added: %s\n", d.Added)
-	req.Equal([]byte("hello"), d.Added)
+	t.Logf("added: %s\n", d.Add)
+	req.Equal([]byte("hello"), d.Add)
 	req.Equal([]*writegood.Piece{{
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}}, d.Pieces)
 	b, _ := d.Bytes()
 	req.Equal([]byte("hello"), b)
-	t.Logf("added: %s\n", d.Added)
+	t.Logf("added: %s\n", d.Add)
 
 	// add to start
 	d.Insert(0, []byte("world"))
 	req.Equal([]*writegood.Piece{{
 		Start:  len("hello"),
 		Length: len("world"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("worldhello"), b)
 
 	// add to middle
 	d.Insert(len("world"), []byte("bye"))
-	t.Logf("added: %s\n", d.Added)
+	t.Logf("added: %s\n", d.Add)
 	req.Equal([]*writegood.Piece{{
 		Start:  len("hello"),
 		Length: len("world"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  len("helloworld"),
 		Length: len("bye"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("worldbyehello"), b)
 
 	d.Insert(len("wor"), []byte("yes"))
-	t.Logf("added: %s\n", d.Added)
+	t.Logf("added: %s\n", d.Add)
 	req.Equal([]*writegood.Piece{{
 		Start:  len("hello"),
 		Length: len("wor"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  len("helloworldbye"),
 		Length: len("yes"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  len("hellowor"),
 		Length: len("ld"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  len("helloworld"),
 		Length: len("bye"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("woryesldbyehello"), b)
 
 	// add to end
 	d.Insert(len("woryesldbyehello"), []byte("grief"))
-	t.Logf("added: %s\n", d.Added)
+	t.Logf("added: %s\n", d.Add)
 	req.Equal([]*writegood.Piece{{
 		Start:  len("hello"),
 		Length: len("wor"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  len("helloworldbye"),
 		Length: len("yes"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  len("hellowor"),
 		Length: len("ld"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  len("helloworld"),
 		Length: len("bye"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  len("woryesldbyehello"),
 		Length: len("grief"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("woryesldbyehellogrief"), b)
@@ -121,7 +121,7 @@ func TestInsert_Existing(t *testing.T) {
 	t.Skip()
 
 	req := require.New(t)
-	d := &writegood.Document{
+	d := &writegood.PieceTable{
 		Original: []byte("helloworld"),
 		Pieces: []*writegood.Piece{{
 			Start:  0,
@@ -130,7 +130,7 @@ func TestInsert_Existing(t *testing.T) {
 		}},
 	}
 	d.Insert(len("hello"), []byte("earth"))
-	t.Logf("original: %s, added: %s\n", d.Original, d.Added)
+	t.Logf("original: %s, added: %s\n", d.Original, d.Add)
 	req.Equal([]*writegood.Piece{{
 		Start:  0,
 		Length: len("hello"),
@@ -138,7 +138,7 @@ func TestInsert_Existing(t *testing.T) {
 	}, {
 		Start:  0,
 		Length: len("earth"),
-		Type:   writegood.Added,
+		Type:   writegood.Add,
 	}, {
 		Start:  len("hello"),
 		Length: len("world"),
@@ -150,7 +150,7 @@ func TestInsert_Existing(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	req := require.New(t)
-	d := &writegood.Document{
+	d := &writegood.PieceTable{
 		Original: []byte("helloworld"),
 		Pieces: []*writegood.Piece{{
 			Start:  0,

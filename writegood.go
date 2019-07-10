@@ -29,7 +29,7 @@ type PieceType int
 
 const (
 	Original PieceType = iota
-	Added
+	Add
 )
 
 // Insert writes the given bytes at the given offset.
@@ -37,7 +37,7 @@ func (d *PieceTable) Insert(offset int, b []byte) {
 	added := &Piece{
 		Start:  len(d.Add),
 		Length: len(b),
-		Type:   Added,
+		Type:   Add,
 	}
 	d.Add = append(d.Add, b...)
 
@@ -133,7 +133,7 @@ func (d *PieceTable) Bytes() ([]byte, error) {
 	for _, p := range d.Pieces {
 		if p.Type == Original {
 			buf.Write(d.Original[p.Start : p.Start+p.Length])
-		} else if p.Type == Added {
+		} else if p.Type == Add {
 			buf.Write(d.Add[p.Start : p.Start+p.Length])
 		} else {
 			return nil, fmt.Errorf("unknown piece type: %d", p.Type)
