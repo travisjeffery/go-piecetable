@@ -1,4 +1,4 @@
-package writegood_test
+package piecetable_test
 
 import (
 	"testing"

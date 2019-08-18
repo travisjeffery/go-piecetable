@@ -1,4 +1,4 @@
-package writegood
+package piecetable
 
 import (
 	"bytes"
