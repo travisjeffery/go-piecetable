@@ -4,23 +4,21 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	writegood "github.com/travisjeffery/writegood"
+	"github.com/travisjeffery/piecetable"
 )
 
 func TestInsert_Empty(t *testing.T) {
-	t.Skip()
-
-	d := &writegood.PieceTable{}
+	d := &piecetable.PieceTable{}
 	req := require.New(t)
 
 	// initial case, empty doc
 	d.Insert(0, []byte("hello"))
 	t.Logf("added: %s\n", d.Add)
 	req.Equal([]byte("hello"), d.Add)
-	req.Equal([]*writegood.Piece{{
+	req.Equal([]*piecetable.Piece{{
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}}, d.Pieces)
 	b, _ := d.Bytes()
 	req.Equal([]byte("hello"), b)
@@ -28,14 +26,14 @@ func TestInsert_Empty(t *testing.T) {
 
 	// add to start
 	d.Insert(0, []byte("world"))
-	req.Equal([]*writegood.Piece{{
+	req.Equal([]*piecetable.Piece{{
 		Start:  len("hello"),
 		Length: len("world"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("worldhello"), b)
@@ -43,44 +41,44 @@ func TestInsert_Empty(t *testing.T) {
 	// add to middle
 	d.Insert(len("world"), []byte("bye"))
 	t.Logf("added: %s\n", d.Add)
-	req.Equal([]*writegood.Piece{{
+	req.Equal([]*piecetable.Piece{{
 		Start:  len("hello"),
 		Length: len("world"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  len("helloworld"),
 		Length: len("bye"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("worldbyehello"), b)
 
 	d.Insert(len("wor"), []byte("yes"))
 	t.Logf("added: %s\n", d.Add)
-	req.Equal([]*writegood.Piece{{
+	req.Equal([]*piecetable.Piece{{
 		Start:  len("hello"),
 		Length: len("wor"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  len("helloworldbye"),
 		Length: len("yes"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  len("hellowor"),
 		Length: len("ld"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  len("helloworld"),
 		Length: len("bye"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("woryesldbyehello"), b)
@@ -88,61 +86,59 @@ func TestInsert_Empty(t *testing.T) {
 	// add to end
 	d.Insert(len("woryesldbyehello"), []byte("grief"))
 	t.Logf("added: %s\n", d.Add)
-	req.Equal([]*writegood.Piece{{
+	req.Equal([]*piecetable.Piece{{
 		Start:  len("hello"),
 		Length: len("wor"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  len("helloworldbye"),
 		Length: len("yes"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  len("hellowor"),
 		Length: len("ld"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  len("helloworld"),
 		Length: len("bye"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  len("woryesldbyehello"),
 		Length: len("grief"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("woryesldbyehellogrief"), b)
 }
 
 func TestInsert_Existing(t *testing.T) {
-	t.Skip()
-
 	req := require.New(t)
-	d := &writegood.PieceTable{
+	d := &piecetable.PieceTable{
 		Original: []byte("helloworld"),
-		Pieces: []*writegood.Piece{{
+		Pieces: []*piecetable.Piece{{
 			Start:  0,
 			Length: len("helloworld"),
-			Type:   writegood.Original,
+			Type:   piecetable.Original,
 		}},
 	}
 	d.Insert(len("hello"), []byte("earth"))
 	t.Logf("original: %s, added: %s\n", d.Original, d.Add)
-	req.Equal([]*writegood.Piece{{
+	req.Equal([]*piecetable.Piece{{
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Original,
+		Type:   piecetable.Original,
 	}, {
 		Start:  0,
 		Length: len("earth"),
-		Type:   writegood.Add,
+		Type:   piecetable.Add,
 	}, {
 		Start:  len("hello"),
 		Length: len("world"),
-		Type:   writegood.Original,
+		Type:   piecetable.Original,
 	}}, d.Pieces)
 	b, _ := d.Bytes()
 	req.Equal([]byte("helloearthworld"), b)
@@ -150,12 +146,12 @@ func TestInsert_Existing(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	req := require.New(t)
-	d := &writegood.PieceTable{
+	d := &piecetable.PieceTable{
 		Original: []byte("helloworld"),
-		Pieces: []*writegood.Piece{{
+		Pieces: []*piecetable.Piece{{
 			Start:  0,
 			Length: len("helloworld"),
-			Type:   writegood.Original,
+			Type:   piecetable.Original,
 		}},
 	}
 	d.Insert(len("hello"), []byte("earth"))
@@ -164,46 +160,46 @@ func TestDelete(t *testing.T) {
 
 	// delete whole earth piece
 	d.Delete(len("hello"), len("helloearth"))
-	req.Equal([]*writegood.Piece{{
+	req.Equal([]*piecetable.Piece{{
 		Start:  0,
 		Length: len("hello"),
-		Type:   writegood.Original,
+		Type:   piecetable.Original,
 	}, {
 		Start:  len("hello"),
 		Length: len("world"),
-		Type:   writegood.Original,
+		Type:   piecetable.Original,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("helloworld"), b)
 
 	// delete part of piece
 	d.Delete(len("hel"), len("hello"))
-	req.Equal([]*writegood.Piece{{
+	req.Equal([]*piecetable.Piece{{
 		Start:  0,
 		Length: len("hel"),
-		Type:   writegood.Original,
+		Type:   piecetable.Original,
 	}, {
 		Start:  len("hello"),
 		Length: len("world"),
-		Type:   writegood.Original,
+		Type:   piecetable.Original,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("helworld"), b)
 
 	// delete middle of piece
 	d.Delete(len("helwor"), len("helworl"))
-	req.Equal([]*writegood.Piece{{
+	req.Equal([]*piecetable.Piece{{
 		Start:  0,
 		Length: len("hel"),
-		Type:   writegood.Original,
+		Type:   piecetable.Original,
 	}, {
 		Start:  len("hello"),
 		Length: len("wor"),
-		Type:   writegood.Original,
+		Type:   piecetable.Original,
 	}, {
 		Start:  len("helloworl"),
 		Length: len("d"),
-		Type:   writegood.Original,
+		Type:   piecetable.Original,
 	}}, d.Pieces)
 	b, _ = d.Bytes()
 	req.Equal([]byte("helword"), b)
